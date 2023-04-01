@@ -193,11 +193,13 @@ if __name__ == '__main__':
     # Change here to adapt to your data
     # n_channels=3 for RGB images
     # n_classes is the number of probabilities you want to get per pixel
+    
+    # what this file wrote originally:
     # model = UNet(n_channels=3, n_classes=args.classes, bilinear=args.bilinear)
     
     # changed ver below:
     # MRI dataset has 2 channels 
-    model = UNet(n_channels=2, n_classes=args.classes, bilinear=args.bilinear)
+    model = UNet(n_channels=2, n_classes=2, bilinear=args.bilinear)
     model = model.to(memory_format=torch.channels_last)
 
     logging.info(f'Network:\n'
