@@ -1,3 +1,4 @@
 {
-    "notebook.output.textLineLimit": 200
+    "notebook.output.textLineLimit": 200,
+    "python.analysis.typeCheckingMode": "off"
 }
