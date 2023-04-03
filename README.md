@@ -1,5 +1,5 @@
 # Jason's work for an MRI project
-In this project, I try to complete **2022 Fall Student Project: Deep Supervised Learning for MRI Reconstruction** by Weijie Gan and Yuyang Hu on July 14th, 2022
+In this project, I work on **2022 Fall Student Project: Deep Supervised Learning for MRI Reconstruction** by Weijie Gan and Yuyang Hu on July 14th, 2022
 
 # Files
 1. nn_model.py
