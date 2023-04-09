@@ -40,13 +40,15 @@ class Me_Net(nn.Module):
         # and two 3x3 convolutions, each followed by a ReLU
         # (?) align_corners = False
         # Reference: https://github.com/pytorch/vision/issues/1708
-        self.c5_c4 = nn.ConvTranspose2d(1024, 512, kernel_size=(2,2), stride=2)
+        self.c5_c4 = nn.ConvTranspose2d(1024, 512, kernel_size=(10,10), stride=2)
         self.Expand_4 = (Conv3x3_Relu_2x(1024, 512))
-        self.c4_c3 = nn.ConvTranspose2d(512, 256, kernel_size=(2,2), stride=2)
+        self.c4_c3 = nn.ConvTranspose2d(512, 256, kernel_size=(18,18), stride=2)
         self.Expand_3 = (Conv3x3_Relu_2x(512, 256))
-        self.c3_c2 = nn.ConvTranspose2d(256, 128, kernel_size=(2,2), stride=2)
+        self.c3_c2 = nn.ConvTranspose2d(256, 128, kernel_size=(18,18), stride=2)
         self.Expand_2 = (Conv3x3_Relu_2x(512, 128))
-        self.c2_c1 = nn.ConvTranspose2d(128, 64, kernel_size=(2,2), stride=2)
+        self.c2_c1 = nn.ConvTranspose2d(128, 64, kernel_size=(26,26), stride=2)
+        # upsampling: just operator, NO param
+        # convTransPose: has param, can train
         self.Expand_1 = (Conv3x3_Relu_2x(128, 64))
         self.out = nn.Conv2d(in_channels=64, out_channels=2, kernel_size=(1, 1), stride=1)
     def forward(self, x):
@@ -60,16 +62,16 @@ class Me_Net(nn.Module):
         c4_c5 = self.c4_c5(Cont_4)
         bottom = self.Bottom(c4_c5)
         c5_c4_half = self.c5_c4(bottom) # add other 1/2
-        c5_c4_full = Concatenate(Cont_4, c5_c4_half)
+        c5_c4_full = torch.cat([Cont_4, c5_c4_half])
         Expa_4 = self.Expand_4(c5_c4_full) 
         c4_c3_half = self.c4_c3(Expa_4) # add other 1/2
-        c4_c3_full = Concatenate(Cont_3, c4_c3_half)
+        c4_c3_full = torch.cat([Cont_3, c4_c3_half])
         Expa_3 = self.Expand_3(c4_c3_full)
         c3_c2_half = self.c3_c2(Expa_3) # add other 1/2
-        c3_c2_full = Concatenate(Cont_2, c3_c2_half)
+        c3_c2_full = torch.cat([Cont_2, c3_c2_half])
         Expa_2 = self.Expand_2(c3_c2_full)
         c2_c1_half = self.c3_c2(Expa_2) # add other 1/2
-        c2_c1_full = Concatenate(Cont_1, c2_c1_half)
+        c2_c1_full = torch.cat([Cont_1, c2_c1_half])
         Expa_1 = self.Expand_1(c2_c1_full)
         logits = self.out(Expa_1)
         return logits
@@ -94,3 +96,20 @@ def train(dataloader, model, loss_fn, optimizer):
         if batch % 100 == 0:
             loss, current = loss.item(), (batch + 1) * len(X)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+
+"""test()"""
+def test(dataloader, model, loss_fn):
+    device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+    size = len(dataloader.dataset)
+    num_batches = len(dataloader)
+    model.eval()
+    test_loss, correct = 0, 0
+    with torch.no_grad():
+        for X, y in dataloader:
+            X, y = X.to(device), y.to(device)
+            pred = model(X)
+            test_loss += loss_fn(pred, y).item()
+            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+    test_loss /= num_batches
+    correct /= size
+    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")

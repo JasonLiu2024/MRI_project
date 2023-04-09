@@ -21,7 +21,7 @@ def Load_h5py(DATA):
     x_hat_ZeroFilledImg = np.fft.ifft2(y_NoisyMeasurement) # <- this is our X
     return x_hat_ZeroFilledImg, x_GroundTruth
 
-class Dataset(torch.utils.data.Dataset):
+class h5py_Dataset(torch.utils.data.Dataset):
     # initialize:
     def __init__(self, subset_X_IDs, y_IDs, DATA):
         # subset_X_IDs: e.g. only use mth to nth examples to train
