@@ -3,3 +3,4 @@
 .DS_Store
 *.tiff
 *.hdf5
+#.pth
